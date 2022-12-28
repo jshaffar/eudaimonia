@@ -49,4 +49,22 @@ def add_parameter(df, trait):
 
 
 def add_parameters(df, traits):
-    for trait in traits: add_parameter(trait)
+    for trait in traits: df = add_parameter(trait)
+    return df
+
+def add_parameter_to_weekdays(df, trait):
+    if trait in df[0][0][1]:
+        print('Trait is already in df, no need to add it')
+    elif trait == 'total_weekday':
+        all_deltas = [list(map(lambda v: v[1]['delta'], df[d])) for d in df]
+        for i in range(0, len(df)):
+            deltas = list(map(lambda v: v[1]['delta'], df))
+            dA = 0
+        [calc.get_total(deltas=0) for i in range(0, len(df))]
+        dA = 0
+    else:
+        raise Exception(f'Do not know how to handle trait: {trait}')
+
+def add_parameters_to_weekdays(df, traits):
+    for trait in traits: df = add_parameter_to_weekdays(df, trait)
+    return df

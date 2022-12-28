@@ -48,20 +48,29 @@ def graph_value_of_each_value(df, start_date=None, end_date=None, animate=False)
 
 def graph_weekdays(df, trait, start_date=None, end_date=None, colors=['black', 'green', 'brown', 'purple', 'red', 'orange', 'blue']):
     df = util.filter_dataframe(df)
+
+
+
+    print(df)
     dates = list(util.get_parameter(df, 'date', start_date=start_date, end_date=end_date))
-    additional_columns = [trait] if trait not in df.columns else []
+    additional_columns = [f'{trait}_weekday'] if trait not in df.columns else []
+    """
     if len(additional_columns) > 0:
         for trait in additional_columns: util.add_parameter(df, trait='total')
-    new_df = calc.get_weekdays_dataframe(df, start_date=start_date, end_date=end_date, additional_columns=additional_columns)
-    x_data = [list(map(lambda v: v[1], list(new_df[i].loc[new_df[i] != ()]))) for i in range(0, 7)]
-    y_data = [list(map(lambda v: v[3][trait], list(new_df[i].loc[new_df[i] != ()]))) for i in range(0, 7)]
+    """
+    print(df)
+    new_df = calc.get_weekdays_dataframe(df, start_date=start_date, end_date=end_date)
+    print(new_df)
+    new_df = util.add_parameters_to_weekdays(df=new_df, traits=additional_columns)
+    x_data = [list(map(lambda v: v[0], list(new_df.loc[new_df[i].isna()]))) for i in range(0, 7)]
+    y_data = [list(map(lambda v: v[1][trait], list(new_df[i].loc[new_df[i] != ()]))) for i in range(0, 7)]
 
     data_labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     multi_graph(x_data=x_data, y_data=y_data, data_labels=data_labels, name=f'days_of_week_{trait}', colors=colors)
 
 filename = 'pursuit.csv'
 df = pd.read_csv(filename)
-graph_weekdays(df, 'total')
+graph_weekdays(df, 'delta')
 #graph_weekdays(df, 'total')
 #graph_total_by_time(df)
 #graph_delta_by_time(df, start_date=datetime.datetime(year=2021, month=2, day=3), end_date=datetime.datetime(year=2021, month=3, day=3))
