@@ -1,6 +1,9 @@
 import calc
 import datetime
 import numpy as np
+import pandas as pd
+import matplotlib as plt
+
 
 def get_column(df, column_name, start_date=None, end_date=None):
     start_date_name = start_date.strftime("%-m/%-d/%-Y") if start_date is not None else None
@@ -33,7 +36,12 @@ def get_parameter(df, name, start_date=None, end_date=None):
     else:
         raise Exception(f'Do not know how to handle name: {name}')
 
-def filter_dataframe(df, trait='delta'):
+def filter_dataframe(df, trait='delta', start_date=None, end_date=None):
+    if 'day' not in df.columns:
+        df = add_parameter(df, 'day')
+    start_date = start_date if start_date is not None else min(df['day'])
+    end_date = end_date if end_date is not None else max(df['day'])
+    df = df[df.apply(lambda v: v['day'] >= start_date and v['day'] <= end_date, axis=1)]
     df = df[df.apply(lambda v: not np.isnan(v[trait]), axis=1)]
     return df
 
@@ -43,6 +51,10 @@ def add_parameter(df, trait):
     elif trait == 'total':
         col = calc.get_total(df)
         df['total'] = col
+    elif trait == 'day':
+        df = calc.get_day(df)
+    elif trait == 'weekday':
+        df = calc.get_weekday(df)
     else:
         raise Exception(f'Do not know how to handle trait: {trait}')
     return df
@@ -68,3 +80,17 @@ def add_parameter_to_weekdays(df, trait):
 def add_parameters_to_weekdays(df, traits):
     for trait in traits: df = add_parameter_to_weekdays(df, trait)
     return df
+
+
+def get_df_from_csv(filename : str):
+    df = pd.read_csv(filename)
+    df = filter_dataframe(df)
+    df = add_parameter(df, trait='day')
+    return df
+
+
+def get_cmap(n, name='hsv'):
+    '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct 
+    RGB color; the keyword argument name must be a standard mpl colormap name.'''
+    return plt.cm.get_cmap(name, n)
+    

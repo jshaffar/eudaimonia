@@ -15,6 +15,22 @@ def get_total(df=None, deltas=None, start_date=None, end_date=None):
         sum += deltas[i]
     return totals
 
+def get_weekday(df, start_date=None, end_date=None):
+    def get_day_of_week(n):
+        day_mapping = {0:'Monday',1:'Tuesday',2:'Wednesday',3: 'Thursday', 4:'Friday', 5:'Saturday', 6:'Sunday'}
+        return day_mapping[n]
+    df = df.assign(weekday=lambda df: df['day'].apply(datetime.datetime.weekday).apply(get_day_of_week))
+    return df
+
+def get_day_from_text(date_text):
+    parsed_date_text = list(map(int, date_text.split('/')))
+    return datetime.datetime(month=parsed_date_text[0], day=parsed_date_text[1], year=parsed_date_text[2])
+
+
+def get_day(df, start_date=None, end_date=None):
+    df = df.assign(day=lambda v: v['date'].apply(get_day_from_text))
+    return df
+
 
 def get_frequencies(df, name=None, start_date=None, end_date=None):
     col = util.get_parameter(df, name, start_date=start_date, end_date=end_date)
@@ -51,3 +67,4 @@ def get_weekdays_dataframe(df, start_date=None, end_date=None):
     list_to_convert = list(map(lambda v: dict_to_convert[v],list(dict_to_convert)))
     new_df = pd.DataFrame(list_to_convert)
     return new_df
+
