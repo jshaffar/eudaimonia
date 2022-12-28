@@ -11,17 +11,19 @@ def trad_graph_provided_xy(x, y, name, dpi=1200, animate=False):
     graph_name = f'Graphs/{name}'
     plt.savefig(graph_name, dpi=dpi, bbox_inches='tight')
     print(f'Printed to {graph_name}')
+    plt.clf()
 
 # specifically designed for days of week initially but may need to expand
-def multi_graph_provided_xy(x_data, y_data, data_labels, name, dpi=1200, animate=False, colors=None, alpha=.7):
+def multi_graph_provided_xy(x_data, y_data, data_labels, name, dpi=1200, animate=False, colors=None, alpha=.7, graph_minmax=True):
     plt.xticks(rotation=90)
     for i in range(0, len(x_data)):
         plt.plot(x_data[i], y_data[i], label=data_labels[i], color=colors[i] if colors is not None else None, alpha=alpha)
+
     graph_name = f'Graphs/{name}'
     plt.savefig(graph_name, dpi=dpi, bbox_inches='tight')
     print(f'Printed to {graph_name}')
 
-def split_graph(df, trait, trait_to_split, name, date=0, dpi=1200, animate=False, colors_file=None, alpha=.7):
+def split_graph(df, trait, trait_to_split, name, date=0, dpi=1200, animate=False, colors_file=None, alpha=.7, graph_minmax=False):
     values = sorted(list(set(df[trait_to_split])))
     data = [df.loc[df[trait_to_split] == value] for value in values]
 
@@ -36,11 +38,18 @@ def split_graph(df, trait, trait_to_split, name, date=0, dpi=1200, animate=False
         label = values[i]
         data_section = data[i]
         #TODO implement random color
-        plt.plot(data_section['day'], data_section[trait],label=label, alpha=alpha, color=colors_dict[label.lower()] if label.lower() in colors_dict else None)
+        color=colors_dict[label.lower()] if label.lower() in colors_dict else None
+        plt.plot(data_section['day'], data_section[trait],label=label, alpha=alpha, color=color)
+        if graph_minmax:
+            plt.axhline(min(list(data_section[trait])), color=color, linestyle='dashed', alpha=.2)
+            plt.axhline(max(list(data_section[trait])), color=color, linestyle='dashed', alpha=.2)
+
+
     plt.legend()
     graph_name = f'Graphs/{name}'
     plt.savefig(graph_name, dpi=dpi, bbox_inches='tight')
     print(f'Printed to {graph_name}')
+    plt.clf()
 
 
 
@@ -69,14 +78,16 @@ def graph_value_of_each_value(df, start_date=None, end_date=None, animate=False)
     x, y = zip(*sorted_values)
     trad_graph_provided_xy(x, y, 'value_by_value', animate=False)
 
-def graph_weekdays(df, trait, start_date=None, end_date=None, colors_file='Config/default.json'):
+def graph_weekdays(df, trait, start_date=None, end_date=None, colors_file='Config/default.json', graph_minmax=False):
     df = util.filter_dataframe(df, start_date=start_date, end_date=end_date)
     df = util.add_parameter(df, 'weekday')
-    split_graph(df=df, trait=trait, trait_to_split='weekday', name=f'days_of_week_{trait}', colors_file=colors_file)
+    name = f'days_of_week_{trait}_from_{df["date"].iloc[0].replace("/", "-")}_to_{df["date"].iloc[-1].replace("/", "-")}'
+    split_graph(df=df, trait=trait, trait_to_split='weekday', name=name, colors_file=colors_file, graph_minmax=graph_minmax)
 
 filename = 'pursuit.csv'
 df = util.get_df_from_csv(filename)
-graph_weekdays(df, 'total', start_date=datetime.datetime(year=2022, month=1, day=1))
+#graph_weekdays(df, 'total', start_date=datetime.datetime(year=2022, month=1, day=1))
+graph_weekdays(df, 'total', graph_minmax=True)
 #graph_weekdays(df, 'total')
 #graph_total_by_time(df)
 #graph_delta_by_time(df, start_date=datetime.datetime(year=2021, month=2, day=3), end_date=datetime.datetime(year=2021, month=3, day=3))
