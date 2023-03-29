@@ -8,8 +8,8 @@ import matplotlib as plt
 def get_column(df, column_name, start_date=None, end_date=None):
     start_date_name = start_date.strftime("%-m/%-d/%-Y") if start_date is not None else None
     end_date_name = start_date.strftime("%-m/%-d/%-Y") if start_date is not None else None
-    start_index = df[df['date']==start_date_name].index.values[0] if start_date is not None else 0
-    end_index = df[df['date']==end_date_name].index.values[0] if end_date is not None else len(df.loc[:, 'delta'])
+    start_index = df[df['Date']==start_date_name].index.values[0] if start_date is not None else 0
+    end_index = df[df['Date']==end_date_name].index.values[0] if end_date is not None else len(df.loc[:, 'Delta'])
     col = df.loc[:,column_name].iloc[start_index:end_index+1]
     return col
 
@@ -31,12 +31,12 @@ def get_rows(df, row_trait, row_name):
 def get_parameter(df, name, start_date=None, end_date=None):
     if name in df.columns:
         return get_column(df, name, start_date, end_date)
-    elif name == 'total':
+    elif name == 'Total':
         return calc.get_total(df)
     else:
         raise Exception(f'Do not know how to handle name: {name}')
 
-def filter_dataframe(df, trait='delta', start_date=None, end_date=None):
+def filter_dataframe(df, trait='Delta', start_date=None, end_date=None):
     if 'day' not in df.columns:
         df = add_parameter(df, 'day')
     start_date = start_date if start_date is not None else min(df['day'])
@@ -48,9 +48,9 @@ def filter_dataframe(df, trait='delta', start_date=None, end_date=None):
 def add_parameter(df, trait):
     if trait in df.columns:
         print('Trait is already in df, no need to add it')
-    elif trait == 'total':
+    elif trait == 'Total':
         col = calc.get_total(df)
-        df['total'] = col
+        df['Total'] = col
     elif trait == 'day':
         df = calc.get_day(df)
     elif trait == 'weekday':
@@ -68,9 +68,9 @@ def add_parameter_to_weekdays(df, trait):
     if trait in df[0][0][1]:
         print('Trait is already in df, no need to add it')
     elif trait == 'total_weekday':
-        all_deltas = [list(map(lambda v: v[1]['delta'], df[d])) for d in df]
+        all_deltas = [list(map(lambda v: v[1]['Delta'], df[d])) for d in df]
         for i in range(0, len(df)):
-            deltas = list(map(lambda v: v[1]['delta'], df))
+            deltas = list(map(lambda v: v[1]['Delta'], df))
             dA = 0
         [calc.get_total(deltas=0) for i in range(0, len(df))]
         dA = 0

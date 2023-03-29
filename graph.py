@@ -6,8 +6,26 @@ import calc
 import util
 import json
 
-def trad_graph_provided_xy(x, y, name, dpi=1200, animate=False):
+def annot_max(x,y, num_annotations, ax=None):
+    ymaxes = list(reversed(list((sorted(y))[-1*num_annotations:])))
+    for ymax in ymaxes:
+        xmax = x[list(y).index(ymax)]
+        text= "x={:.3f}, y={:.3f}".format(xmax, ymax)
+        if not ax:
+            ax=plt.gca()
+        bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
+        arrowprops=dict(arrowstyle="->",connectionstyle="angle,angleA=0,angleB=60")
+        kw = dict(xycoords='data',textcoords="data",
+                arrowprops=arrowprops, bbox=bbox_props, ha="left", va="top")
+        ax.annotate(text, xy=(xmax, ymax), xytext=(xmax+.5,ymax+5), **kw)
+
+
+def trad_graph_provided_xy(x, y, name, dpi=1200, animate=False, num_annotations=0):
+
     plt.plot(x, y)
+    if num_annotations > 0:
+        annot_max(x, y, num_annotations)
+
     graph_name = f'Graphs/{name}'
     plt.savefig(graph_name, dpi=dpi, bbox_inches='tight')
     print(f'Printed to {graph_name}')
@@ -54,25 +72,25 @@ def split_graph(df, trait, trait_to_split, name, date=0, dpi=1200, animate=False
 
 
 def graph_delta_by_time(df, start_date=None, end_date=None, animate=False):
-    dates = list(util.get_column(df, 'date', start_date=start_date, end_date=end_date))
-    deltas = list(util.get_column(df, 'delta', start_date=start_date, end_date=end_date))
+    dates = list(util.get_column(df, 'Date', start_date=start_date, end_date=end_date))
+    deltas = list(util.get_column(df, 'Delta', start_date=start_date, end_date=end_date))
     trad_graph_provided_xy(dates, deltas, 'deltas', animate=False)
 
 def graph_total_by_time(df, start_date=None, end_date=None, animate=False):
     totals = list(calc.get_total(df))
-    dates = list(util.get_column(df, 'date', start_date=start_date, end_date=end_date))[:len(totals)]
+    dates = list(util.get_column(df, 'Date', start_date=start_date, end_date=end_date))[:len(totals)]
     trad_graph_provided_xy(dates, totals, 'totals', animate=False)
 
-def graph_frequency_by_time(df, name, start_date=None, end_date=None, animate=False):
+def graph_frequency_by_time(df, name, start_date=None, end_date=None, animate=False, num_annotations=0):
 
     freq = calc.get_frequencies(df, name=name, start_date=start_date, end_date=end_date)
     sorted_freqs = sorted(freq.items())
     x, y = zip(*sorted_freqs)
-    trad_graph_provided_xy(x, y, f'freq_{name}', animate=False)
+    trad_graph_provided_xy(x, y, f'freq_{name}', animate=False, num_annotations=num_annotations)
 
 
 def graph_value_of_each_value(df, start_date=None, end_date=None, animate=False):
-    freq = calc.get_frequencies(df, name='delta', start_date=start_date, end_date=end_date)
+    freq = calc.get_frequencies(df, name='Delta', start_date=start_date, end_date=end_date)
     sorted_freqs = sorted(freq.items())
     sorted_values = list(map(lambda v: (v[0], v[0] * v[1]), sorted_freqs))
     x, y = zip(*sorted_values)
@@ -81,17 +99,16 @@ def graph_value_of_each_value(df, start_date=None, end_date=None, animate=False)
 def graph_weekdays(df, trait, start_date=None, end_date=None, colors_file='Config/default.json', graph_minmax=False):
     df = util.filter_dataframe(df, start_date=start_date, end_date=end_date)
     df = util.add_parameter(df, 'weekday')
-    name = f'days_of_week_{trait}_from_{df["date"].iloc[0].replace("/", "-")}_to_{df["date"].iloc[-1].replace("/", "-")}'
+    name = f'days_of_week_{trait}_from_{df["Date"].iloc[0].replace("/", "-")}_to_{df["Date"].iloc[-1].replace("/", "-")}'
     split_graph(df=df, trait=trait, trait_to_split='weekday', name=name, colors_file=colors_file, graph_minmax=graph_minmax)
 
 filename = 'pursuit.csv'
 df = util.get_df_from_csv(filename)
 #graph_weekdays(df, 'total', start_date=datetime.datetime(year=2022, month=1, day=1))
-graph_weekdays(df, 'total', graph_minmax=True)
-#graph_weekdays(df, 'total')
+graph_weekdays(df, 'Delta', start_date=datetime.datetime(year=2023, month=1, day=1), graph_minmax=True)
 #graph_total_by_time(df)
 #graph_delta_by_time(df, start_date=datetime.datetime(year=2021, month=2, day=3), end_date=datetime.datetime(year=2021, month=3, day=3))
-#graph_frequency_by_time(df, 'delta')
-#graph_frequency_by_time(df, 'total')
+#graph_frequency_by_time(df, 'Delta', num_annotations=1)
+#graph_frequency_by_time(df, 'Total')
 #graph_value_of_each_value(df)
 
