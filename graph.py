@@ -87,7 +87,7 @@ def get_name(attribute, params, start_date, end_date):
 def graph_attribute_by_time(df, attribute, params={}, start_date=None, end_date=None, animate=False):
     if "on_weekday" in params and params["on_weekday"]:
         return graph_weekday_attribute_by_time(df, attribute=attribute, params=params, start_date=start_date, end_date=end_date, animate=animate)
-    dates = list(util.get_column(df, 'Date', start_date=start_date, end_date=end_date))
+    dates = list(util.get_column(df, 'day', start_date=start_date, end_date=end_date))
     y_var = list(util.get_column(df, attribute, start_date=start_date, end_date=end_date))
     name = get_name(attribute=attribute, params=params, start_date=start_date, end_date=end_date)
     trad_graph_provided_xy(dates, y_var, name, animate=False)
@@ -157,7 +157,7 @@ if __name__ == "__main__":
     on_weekday = args.on_weekday.lower() in ["t", "true"]
 
     if attribute is not None and attribute in ['Total', 'Delta']:
-        params = {"name":args.name, "on_weekday": on_weekday}
+        params = {"name":args.name}
         graph_attribute_by_time(df=df, params=params, attribute=attribute, start_date=start_date, end_date=end_date)
     elif attribute == 'Frequency':
         graph_frequency_by_time(df=df, start_date=start_date, end_date=end_date, name=args.name)
