@@ -6,8 +6,8 @@ import matplotlib as plt
 
 
 def get_column(df, column_name, start_date=None, end_date=None):
-    start_date_name = start_date.strftime("%-m/%-d/%-Y") if start_date is not None else None
-    end_date_name = start_date.strftime("%-m/%-d/%-Y") if start_date is not None else None
+    start_date_name = start_date.strftime("%-Y-%m-%d") if start_date is not None else None
+    end_date_name = end_date.strftime("%-Y-%m-%d") if end_date is not None else None
     start_index = df[df['Date']==start_date_name].index.values[0] if start_date is not None else 0
     end_index = df[df['Date']==end_date_name].index.values[0] if end_date is not None else len(df.loc[:, 'Delta'])
     col = df.loc[:,column_name].iloc[start_index:end_index+1]
@@ -31,8 +31,6 @@ def get_rows(df, row_trait, row_name):
 def get_parameter(df, name, start_date=None, end_date=None):
     if name in df.columns:
         return get_column(df, name, start_date, end_date)
-    elif name == 'Total':
-        return calc.get_total(df)
     else:
         raise Exception(f'Do not know how to handle name: {name}')
 
@@ -45,8 +43,9 @@ def filter_dataframe(df, trait='Delta', start_date=None, end_date=None):
     df = df[df.apply(lambda v: not np.isnan(v[trait]), axis=1)]
     return df
 
-def add_parameter(df, trait):
-    if trait in df.columns:
+
+def add_parameter(df, trait, need_custom_method=False):
+    if trait in df.columns and need_custom_method is False:
         print('Trait is already in df, no need to add it')
     elif trait == 'Total':
         col = calc.get_total(df)
@@ -87,6 +86,15 @@ def get_df_from_csv(filename : str):
     df = filter_dataframe(df)
     df = add_parameter(df, trait='day')
     return df
+
+
+def split_frame(df, param_to_split):
+    unique_values = list(df[param_to_split].unique())
+    frames = {}
+    for value in unique_values:
+        frames[value] = df[df.apply(lambda v: v[param_to_split] == value, axis=1)]
+
+    return frames
 
 
 def get_cmap(n, name='hsv'):
