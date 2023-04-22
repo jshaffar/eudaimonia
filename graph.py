@@ -23,6 +23,8 @@ def annot_max(x,y, num_annotations, ax=None):
 
 def trad_graph_provided_xy(x, y, name, dpi=1200, animate=False, num_annotations=0):
     plt.plot(x, y)
+    plt.xticks(rotation=90)
+
     if num_annotations > 0:
         annot_max(x, y, num_annotations)
 
@@ -32,15 +34,21 @@ def trad_graph_provided_xy(x, y, name, dpi=1200, animate=False, num_annotations=
     plt.clf()
 
 # specifically designed for days of week initially but may need to expand
-def multi_graph_provided_xy(x_data, y_data, data_labels, name, dpi=1200, animate=False, colors=None, alpha=.7, graph_minmax=True):
+def multi_graph_provided_xy(x_data, y_data, data_labels, name, dpi=1200, animate=False, colors_file=None, alpha=.7, graph_minmax=False):
     plt.xticks(rotation=90)
+    colors_dict = json.load(open(colors_file)) if colors_file is not None else {}
+
     for i in range(0, len(x_data)):
-        try:
-            plt.plot(x_data[0], y_data[i], label=data_labels[i], color=colors[i] if colors is not None else None, alpha=alpha)
-        except:
-            plt.plot(x_data[6], y_data[i], label=data_labels[i], color=colors[i] if colors is not None else None, alpha=alpha)
+        color=colors_dict[data_labels[i].lower()] if data_labels[i].lower() in colors_dict else None
+        plt.plot(x_data[i], y_data[i], label=data_labels[i], color=color, alpha=alpha)
+        print(f'label: {data_labels[i]}, x_label: {x_data[i][-1]}, y_label: {y_data[i][-1]}')
+        if graph_minmax:
+            plt.axhline(min(list(y_data[i])), color=color, linestyle='dashed', alpha=.2)
+            plt.axhline(max(list(y_data[i])), color=color, linestyle='dashed', alpha=.2)
 
+    plt.xticks(rotation=90)
 
+    plt.legend()
     graph_name = f'Graphs/{name}'
     plt.savefig(graph_name, dpi=dpi, bbox_inches='tight')
     print(f'Printed to {graph_name}')
@@ -84,8 +92,9 @@ def get_name(attribute, params, start_date, end_date):
             name += f'-{param}_{params[param]}'
     return name
 
-def graph_attribute_by_time(df, attribute, params={}, start_date=None, end_date=None, animate=False):
-    if "on_weekday" in params and params["on_weekday"]:
+def graph_attribute_by_time(df, attribute, on_weekday=False, params={}, start_date=None, end_date=None, animate=False):
+    df = util.filter_dataframe(df, 'Delta', start_date=start_date, end_date=end_date)
+    if on_weekday:
         return graph_weekday_attribute_by_time(df, attribute=attribute, params=params, start_date=start_date, end_date=end_date, animate=animate)
     dates = list(util.get_column(df, 'day', start_date=start_date, end_date=end_date))
     y_var = list(util.get_column(df, attribute, start_date=start_date, end_date=end_date))
@@ -93,6 +102,7 @@ def graph_attribute_by_time(df, attribute, params={}, start_date=None, end_date=
     trad_graph_provided_xy(dates, y_var, name, animate=False)
 
 def graph_weekday_attribute_by_time(df, attribute, params={}, start_date=None, end_date=None, colors_file='Config/default.json', animate=False):
+    df = util.filter_dataframe(df=df, start_date=start_date, end_date=end_date)
     df = util.add_parameter(df, 'weekday')
     frames = util.split_frame(df, param_to_split='weekday')
     labels = []
@@ -107,7 +117,7 @@ def graph_weekday_attribute_by_time(df, attribute, params={}, start_date=None, e
         labels.append(frame)
     params['weekday'] = True
     name = get_name(attribute=attribute, params=params, start_date=start_date, end_date=end_date)
-    multi_graph_provided_xy(x_data=x_data, y_data=y_data, data_labels=labels, name=name)
+    multi_graph_provided_xy(x_data=x_data, y_data=y_data, data_labels=labels, name=name, colors_file=colors_file)
 
 
 
@@ -149,7 +159,6 @@ if __name__ == "__main__":
     def parse_date(date_str):
         date_split = list(map(lambda v: int(v), date_str.split('/')))
         date = datetime.datetime(year=date_split[2], month=date_split[0], day=date_split[1])
-        print(date)
         return date
     start_date = parse_date(args.start_date) if args.start_date is not None else None
     end_date = parse_date(args.end_date) if args.end_date is not None else None
@@ -158,7 +167,7 @@ if __name__ == "__main__":
 
     if attribute is not None and attribute in ['Total', 'Delta']:
         params = {"name":args.name}
-        graph_attribute_by_time(df=df, params=params, attribute=attribute, start_date=start_date, end_date=end_date)
+        graph_attribute_by_time(df=df, params=params, attribute=attribute, on_weekday=on_weekday, start_date=start_date, end_date=end_date)
     elif attribute == 'Frequency':
         graph_frequency_by_time(df=df, start_date=start_date, end_date=end_date, name=args.name)
     elif attribute == 'Value':

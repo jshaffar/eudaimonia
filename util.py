@@ -5,13 +5,7 @@ import pandas as pd
 import matplotlib as plt
 
 
-def get_column(df, column_name, start_date=None, end_date=None):
-    start_date_name = start_date.strftime("%-Y-%m-%d") if start_date is not None else None
-    end_date_name = end_date.strftime("%-Y-%m-%d") if end_date is not None else None
-    start_index = df[df['Date']==start_date_name].index.values[0] if start_date is not None else 0
-    end_index = df[df['Date']==end_date_name].index.values[0] if end_date is not None else len(df.loc[:, 'Delta'])
-    col = df.loc[:,column_name].iloc[start_index:end_index+1]
-    return col
+
 
 """
 gets first row like something
@@ -28,11 +22,6 @@ def get_rows(df, row_trait, row_name):
     return df.loc[df[row_trait] == row_name].values.T.tolist()
 
 
-def get_parameter(df, name, start_date=None, end_date=None):
-    if name in df.columns:
-        return get_column(df, name, start_date, end_date)
-    else:
-        raise Exception(f'Do not know how to handle name: {name}')
 
 def filter_dataframe(df, trait='Delta', start_date=None, end_date=None):
     if 'day' not in df.columns:
@@ -40,8 +29,18 @@ def filter_dataframe(df, trait='Delta', start_date=None, end_date=None):
     start_date = start_date if start_date is not None else min(df['day'])
     end_date = end_date if end_date is not None else max(df['day'])
     df = df[df.apply(lambda v: v['day'] >= start_date and v['day'] <= end_date, axis=1)]
-    df = df[df.apply(lambda v: not np.isnan(v[trait]), axis=1)]
+    if trait is not None:
+        df = df[df.apply(lambda v: not np.isnan(v[trait]), axis=1)]
+    df = df.reset_index(drop=True)
     return df
+
+"""
+def filter_dataframe(df, start_date, end_date):
+    if 'day' not in df:
+        df = add_parameter(df, 'day')
+    df = df[df['day']>start_date and df['day']<end_date] if start_date is not None and end_date is not None else df[df['day']>start_date] if start_date is not None else df[df['day']>start_date] if end_date is not None else df
+    return df
+"""
 
 
 def add_parameter(df, trait, need_custom_method=False):
@@ -57,6 +56,18 @@ def add_parameter(df, trait, need_custom_method=False):
     else:
         raise Exception(f'Do not know how to handle trait: {trait}')
     return df
+
+def get_column(df, column_name, start_date=None, end_date=None):
+    filter_dataframe(df, None, start_date=start_date, end_date=end_date)
+    col = df.loc[:,column_name]
+    return col
+
+
+def get_parameter(df, name, start_date=None, end_date=None):
+    if name in df.columns:
+        return get_column(df, name, start_date, end_date)
+    else:
+        raise Exception(f'Do not know how to handle name: {name}')
 
 
 def add_parameters(df, traits):
