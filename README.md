@@ -14,7 +14,14 @@ python spreadsheet.py
 This should obtain the spreasheet from google drive and put it in a csv file called pursuit.csv
 
 ### Graphing:
-"python graph.py": graphs data. See options with "python graph.py -h". 
+Graphs data. Many different options, some shown in examples.
+```shell
+python graph.py
+```
+See options with 
+```shell
+python graph.py -h
+```
 Type dates in the american format "2/28/2023"
 
 ### Calc:
@@ -30,7 +37,7 @@ Graphing total happiness during 2021
 ```shell
 python graph.py -sd 1/1/2021 -ed 1/1/2022
 ```
-![image](Graphs/Total-from_2021-01-01 00:00:00-to_2022-01-01 00:00:00.png)
+![image]("Graphs/totals.png")
 
 
 
