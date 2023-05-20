@@ -29,6 +29,7 @@ def trad_graph_provided_xy(x, y, name, dpi=1200, animate=False, num_annotations=
         annot_max(x, y, num_annotations)
 
     graph_name = f'Graphs/{name}'
+    graph_name = graph_name.replace(" ", "-")
     plt.savefig(graph_name, dpi=dpi, bbox_inches='tight')
     print(f'Printed to {graph_name}')
     plt.clf()

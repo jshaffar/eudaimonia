@@ -37,7 +37,7 @@ Graphing total happiness during 2021
 ```shell
 python graph.py -sd 1/1/2021 -ed 1/1/2022
 ```
-![image](Graphs/totals.png)
+![image](Pictures/Total-from_2021-01-01-00:00:00-to_2022-01-01-00:00:00.png)
 
 
 
