@@ -35,9 +35,25 @@ The most consecutive rows with the condition exists is 12. This was from 2020-09
 ### Examples:
 Graphing total happiness during 2021
 ```shell
-python graph.py -sd 1/1/2021 -ed 1/1/2022
+python graph.py -sd 1/1/2021 -ed 12/31/2021 -a Total
 ```
-![image]("Graphs/totals.png")
+![image](Pictures/Total-from_2021-01-01-00:00:00-to_2022-01-01-00:00:00.png)
+Not a good year lol :<
+
+Graphing the change in happiness for each day
+```shell
+python graph.py -sd 1/1/2021 -ed 12/31/2021 -a Delta
+```
+![image](Pictures/Delta-from_2021-01-01-00:00:00-to_2021-12-31-00:00:00.png)
+
+Graphing the change in happiness on each weekday. My favorite game is to see each weekday race throughout the year!!
+```shell
+python graph.py -sd 1/1/2021 -ed 12/31/2021 -a Total -ow TRUE
+```
+![image](Pictures/Total-from_2021-01-01-00:00:00-to_2021-12-31-00:00:00-weekday_True.png)
+
+
+
 
 
 
